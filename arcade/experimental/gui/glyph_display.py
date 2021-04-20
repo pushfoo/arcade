@@ -40,31 +40,32 @@ def flatten_glyph_selection(selection: GlyphSelection) -> str:
     """
     if not isinstance(selection, (str, list, tuple)):
         raise TypeError(
-            f"A glyph selection can only a string, list of "
+            f"A glyph selection can only be a string, list of "
             f"strings, or tuple of strings. Got {selection!r}"
             f" instead."
         )
 
-    if len(selection) < 1 or len(selection[0]) < 1:
-        raise ValueError(
-            "Glyph selection is empty despite being the right type")
-
-    # strings are already both valid and flat
+    # single strings are implictly flat
     if isinstance(selection, str):
-        return selection
+        flattened = selection
 
-    # make sure all elements are strings
-    for index, element in enumerate(selection):
-        if not isinstance(element, str):
-            raise TypeError(
-                f"Not all elements are strings: {element!r},"
-                f" element at index {index}, is a {type(element)},"
-                f"not a valid string."
-            )
+    else:
+        # make sure all elements are strings
+        for index, element in enumerate(selection):
+            if not isinstance(element, str):
+                raise TypeError(
+                    f"Not all elements are strings: {element!r},"
+                    f" element at index {index}, is a {type(element)},"
+                    f"not a valid string."
+                )
 
-    # flatten it
-    return ''.join(selection)
+        # flatten it
+        flattened = ''.join(selection)
 
+    if len(selection) < 1:
+        raise ValueError("Glyph selection is empty")
+
+    return flattened
 
 def remap_font_glyph_table_lowercase_to_upper(
         glyph_table: TextureTable) -> None:
@@ -250,7 +251,7 @@ def build_glyph_table_from_system_font(
 
 DEFAULT_RENDERED_FONT = build_glyph_table_from_system_font()
 DEFAULT_BITMAP_FONT = load_monospace_spritesheet_font(
-   ":resources:/fonts/bitmap/pixfont_by_CruzR.png",
+   ":resources:/experimental/fonts/bitmap/pixfont_by_CruzR.png",
     12, 16,
     16,
     (6 * 16) - 1, # skip last character in the font
