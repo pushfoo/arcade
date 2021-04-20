@@ -6,10 +6,11 @@ these functions if you are an end user rather than a developer.
 
 """
 from pathlib import Path
-from typing import Union, List, Tuple, Dict
+from typing import Union, List, Tuple, Dict, Any
 from arcade import Texture, load_spritesheet, Color
 from arcade.color import WHITE
-from arcade.gui import text_utils
+from arcade.gui import text_utils, UIBoxLayout, UIElement
+from arcade.gui.elements.box import UITextureBox
 
 TextureTable = Dict[str, Texture]
 
@@ -246,4 +247,19 @@ def build_glyph_table_from_system_font(
         )
     return glyph_table
 
-DEFAULT_GLYPH_FONT = build_glyph_table_from_system_font()
+
+DEFAULT_RENDERED_FONT = build_glyph_table_from_system_font()
+DEFAULT_BITMAP_FONT = load_monospace_spritesheet_font(
+   ":resources:/fonts/bitmap/pixfont_by_CruzR.png",
+    12, 16,
+    16,
+    (6 * 16) - 1, # skip last character in the font
+    glyph_selection = [\
+       r""" !"#$%&'()*+,-./""",
+       r"""0123456789:;<=>?""",
+       r"""@ABCDEFGHIJKLMNO""",
+       r"""PQRSTUVWXYZ[\]^_""",
+       r"""`abcdefghijklmno""",
+       r"""pqrstuvwxyz{|}~"""
+    ]
+)
