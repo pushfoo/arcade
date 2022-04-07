@@ -399,7 +399,8 @@ def load_texture(file_name: Union[str, Path],
                  can_cache: bool = True,
                  mirrored: bool = None,
                  hit_box_algorithm: Optional[str] = "Simple",
-                 hit_box_detail: float = 4.5) -> Texture:
+                 hit_box_detail: float = 4.5,
+                 rotate_by_degrees: float = None) -> Texture:
     """
     Load an image from disk and create a texture.
 
@@ -445,6 +446,8 @@ def load_texture(file_name: Union[str, Path],
            hit_box_algorithm = "Detailed"
 
     :param float hit_box_detail: Float, defaults to 4.5. Used with 'Detailed' to hit box
+    :param rotate_by_degrees: How many degrees to rotate the texture by \
+    before hitbox generation.
 
     :returns: New :class:`Texture` object.
 
@@ -458,7 +461,7 @@ def load_texture(file_name: Union[str, Path],
         flipped_horizontally = mirrored
 
     # See if we already loaded this texture, and we can just use a cached version.
-    cache_name = f"{file_name}-{x}-{y}-{width}-{height}-{flipped_horizontally}-{flipped_vertically}-{flipped_diagonally}-{hit_box_algorithm} "  # noqa
+    cache_name = f"{file_name}-{x}-{y}-{width}-{height}-{flipped_horizontally}-{flipped_vertically}-{flipped_diagonally}-{hit_box_algorithm}-{rotate_by_degrees} "  # noqa
     if can_cache and cache_name in load_texture.texture_cache:  # type: ignore # dynamic attribute on function obj
         return load_texture.texture_cache[cache_name]  # type: ignore # dynamic attribute on function obj
 
@@ -510,6 +513,9 @@ def load_texture(file_name: Union[str, Path],
 
     if flipped_vertically:
         image = image.transpose(PIL.Image.FLIP_TOP_BOTTOM)
+
+    if rotate_by_degrees:
+        image = image.rotate(rotate_by_degrees)
 
     result = Texture(cache_name, image,
                      hit_box_algorithm=hit_box_algorithm,
