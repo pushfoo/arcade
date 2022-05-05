@@ -125,27 +125,6 @@ class SynthKey(arcade.SpriteSolidColor):
 
         self._pressed = new_state
 
-
-class BlackKey(SynthKey):
-    """
-    Convenience class
-    """
-    def __init__(
-        self,
-        width: float,
-        height: float,
-        sample: str,
-        speed: float,
-        loop: bool = True
-    ):
-        super().__init__(
-            width, height,
-            sample, speed,
-            (45, 45, 45),
-            (0,0,0),
-            loop
-        )
-
  
 class SynthKeyboard:
     """
@@ -169,7 +148,7 @@ class SynthKeyboard:
         key_spacing_px: float = 2,
         sample: str = ":resources:/sounds/440hz_tuning_C4_sinewave.wav",
         loop_sample: bool = True,
-        sample_key_number: int = 40,
+        sample_pitch_hz: float = 440.0,
         a_above_middle_c_hz: float = 440.0,
         black_key_scale_x: float = 0.5,
         black_key_scale_y: float = 0.6
@@ -181,10 +160,7 @@ class SynthKeyboard:
         self._start_key_n = start_key_n
         self._end_key_n = end_key_n
         self._sample = sample
-        self._sample_frequency = key_frequency(
-            sample_key_number,
-            a_above_middle_c_hz
-        )
+        self._sample_pitch_hz = sample_pitch_hz
         self._key_spacing_px = key_spacing_px
 
         # figure out metadata needed to determine sizes 
@@ -192,7 +168,6 @@ class SynthKeyboard:
         self._num_black_keys = 0
         key_metadata = {} 
 
-        print("generating key metadata:")
         for n in range(self._start_key_n, self._end_key_n + 1):
             is_black = key_is_black(n)
             
@@ -203,73 +178,94 @@ class SynthKeyboard:
                 
             key_metadata[n] = is_black
         
-        # determine key sizes
-        self._white_key_width_px =\
-            ( self._width_px - key_spacing_px * (self._num_white_keys - 1))\
-            / self._num_white_keys
+        # determine key sizes and spacing
+        self._white_key_width_px = self._width_px
+        self._white_key_width_px -= key_spacing_px * (self._num_white_keys - 1)
+        self._white_key_width_px /= self._num_white_keys
+
         self._white_key_height_px = height_px - 2 * self._key_spacing_px
+        half_white_width = self._white_key_width_px / 2
 
-        self._black_key_width_px = self._white_key_width_px * black_key_scale_x 
-        self._black_key_height_px = self._white_key_height_px * black_key_scale_y 
+        self._black_key_width_px, self._black_key_height_px = (
+            self._white_key_width_px * black_key_scale_x,
+            self._white_key_height_px * black_key_scale_y
+        )
 
-        # generates the actual keys and config
-
-        self.all_keys = arcade.SpriteList()
-        self.black_keys = arcade.SpriteList()
-        self.white_keys = arcade.SpriteList()
-
-        current_white_key_index = 0
         white_key_step = self._white_key_width_px + self._key_spacing_px
 
-        white_key_start_x =\
-            self._center_x - (self._width_px / 2)\
-            + (self._white_key_width_px / 2)
+        # how much to shift black keys left and up
+        black_key_offset_x_px, black_key_offset_y_px = (
+            half_white_width - white_key_step,
+            self._white_key_height_px * ( 1 - black_key_scale_y) / 2
+        )
 
+        # calculate the leftmost center x for white keys
+        white_key_start_x = self._center_x
+        white_key_start_x -= (self._width_px / 2) - half_white_width
+
+        # set up a place to store the keys
+        self.keys_piano_order = arcade.SpriteList()
+        self.black_keys = arcade.SpriteList()
+        self.white_keys = arcade.SpriteList()
+        self.keys_draw_order = arcade.SpriteList()
+
+        # build and place the keyboard elements
+        current_white_key_index = 0
         for n, is_black in key_metadata.items():
 
-            # calculate how fast we need to play the base clip
+            # calculate how fast we need to play the sample
             current_frequency = key_frequency(n)
-            speed = current_frequency / self._sample_frequency
+            speed = current_frequency / self._sample_pitch_hz
           
-            # set the current white key start point
-            current_white_x = white_key_start_x
-            current_white_x += white_key_step * current_white_key_index
+            # set the new key's initial centerpoint, bottom row default
+            current_key_x = white_key_start_x
+            current_key_x += white_key_step * current_white_key_index
+            current_key_y = self._center_y
 
             if is_black:
-                # not yet implemented
-                key = BlackKey(
+                target_list = self.black_keys
+                key_width, key_height, up_color, down_color = (
                     self._black_key_width_px,
                     self._black_key_height_px,
-                    self._sample,
-                    speed
+                    (45, 45, 45),
+                    (0, 0, 0)
                 )
-                key.position = (
-                    current_white_x - white_key_step + self._white_key_width_px / 2,
-                    self._center_y + (self._white_key_height_px * (( 1 - black_key_scale_y) /2))
-                )
-                self.black_keys.append(key)
+
+                # shift the key to the correct position if it's black
+                current_key_x += black_key_offset_x_px
+                current_key_y += black_key_offset_y_px
 
             else:
-                key = SynthKey(
+                target_list = self.white_keys
+
+                key_width, key_height, up_color, down_color = (
                     self._white_key_width_px,
                     self._white_key_height_px,
-                    self._sample,
-                    speed
-                )
-                key.position = (
-                    current_white_x,
-                    self._center_y
+                    (205, 205, 205),
+                    (255, 255, 255)
                 )
 
-                self.white_keys.append(key)
                 current_white_key_index += 1
 
+            key = SynthKey(
+                key_width,
+                key_height,
+                self._sample,
+                speed,
+                up_color,
+                down_color
+            )
+            key.position = current_key_x, current_key_y
+
+            target_list.append(key)
+            self.keys_piano_order.append(key)
+
         # place white keys below black keys in draw order 
-        self.all_keys.extend(self.white_keys)
-        self.all_keys.extend(self.black_keys)
+        self.keys_draw_order.extend(self.white_keys)
+        self.keys_draw_order.extend(self.black_keys)
 
     def draw(self):
-        self.all_keys.draw()
+        self.keys_draw_order.draw()
 
     @property
     def position(self) -> Tuple:
@@ -300,7 +296,6 @@ class PianoExample(arcade.Window):
         pass
             
 if __name__ == "__main__":
-
     p = PianoExample()
     arcade.run()
 
