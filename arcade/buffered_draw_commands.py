@@ -13,7 +13,7 @@ import itertools
 from collections import defaultdict
 import pyglet.gl as gl
 
-from typing import List, Iterable, Sequence
+from typing import List, Iterable, Sequence, Union
 from typing import TypeVar
 from typing import Generic
 from typing import cast
@@ -649,6 +649,22 @@ class ShapeElementList(Generic[TShape]):
         group = (item.mode, item.line_width)
         self.batches[group].items.remove(item)
         self.dirties.add(group)
+
+    def extend(self, shapes: Union[Iterable[TShape], "ShapeElementList"]) -> None:
+        """
+        Extend the ShapeElementList from an iterable or ShapeElementList
+
+        :param shapes: The source object to extend from.
+        :return:
+        """
+        for shape in shapes:
+            self.append(shape)
+
+    def clear(self) -> None:
+        """Remove all shapes from this list."""
+        # The while loop avoids breaking an iterator by modifying list
+        while self.shape_list:
+            self.remove(self.shape_list[0])
 
     def _refresh_shape(self, group):
         # Create a buffer large enough to hold all the shapes buffers
