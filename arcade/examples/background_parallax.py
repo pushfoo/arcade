@@ -16,47 +16,57 @@ import arcade
 import arcade.background as background
 
 SCREEN_WIDTH = 800
-SCREEN_HEIGHT = 600
 
 SCREEN_TITLE = "Background Group Example"
 
 PLAYER_SPEED = 300
 
+BASE_LAYER_HEIGHT = 240
+PIXEL_SCALE = 3
+FINAL_LAYER_HEIGHT = BASE_LAYER_HEIGHT * PIXEL_SCALE
+SCREEN_HEIGHT = FINAL_LAYER_HEIGHT
+
 
 class MyGame(arcade.Window):
     def __init__(self):
         super().__init__(SCREEN_WIDTH, SCREEN_HEIGHT, SCREEN_TITLE, resizable=True)
+
         # Set the background color to equal to that of the first background.
-        self.background_color = (5, 44, 70)
+        self.background_color = (162, 84, 162)
 
         self.camera = arcade.SimpleCamera()
 
-        # create a background group which will hold all the backgrounds.
+        # create a background group which will hold all the moving layers
         self.backgrounds = background.ParallaxGroup()
+
+        final_width_size = (SCREEN_WIDTH, FINAL_LAYER_HEIGHT)
 
         # Add each background from a file.
         # It is important to note that the scale only impacts the texture and not the background.
         # This means we need to ensure the background size is also scaled correctly.
         self.backgrounds.add_from_file(
-            ":resources:/images/cybercity_background/far-buildings.png",
-            (0.0, 240.0),
-            (SCREEN_WIDTH, 576),
-            4,
-            scale=3,
+            ":resources:/images/miami_synth_parallax/Layers/back.png",
+            size=final_width_size,
+            depth=10.0,
+            scale=PIXEL_SCALE
         )
         self.backgrounds.add_from_file(
-            ":resources:/images/cybercity_background/back-buildings.png",
-            (0.0, 120.0),
-            (SCREEN_WIDTH, 576),
-            2,
-            scale=3,
+            ":resources:/images/miami_synth_parallax/Layers/buildings.png",
+            size=final_width_size,
+            depth=5.0,
+            scale=PIXEL_SCALE
         )
         self.backgrounds.add_from_file(
-            ":resources:/images/cybercity_background/foreground.png",
-            (0.0, 0.0),
-            (SCREEN_WIDTH, 576),
-            1,
-            scale=3,
+            ":resources:/images/miami_synth_parallax/Layers/palms.png",
+            size=final_width_size,
+            depth=3,
+            scale=PIXEL_SCALE
+        )
+        self.backgrounds.add_from_file(
+            ":resources:/images/miami_synth_parallax/Layers/highway.png",
+            size=final_width_size,
+            depth=1.0,
+            scale=PIXEL_SCALE
         )
 
         # Create the player sprite.
@@ -113,13 +123,13 @@ class MyGame(arcade.Window):
     def on_resize(self, width: int, height: int):
         super().on_resize(width, height)
         self.camera.resize(width, height)
+        full_width_size = (width, FINAL_LAYER_HEIGHT)
 
         # We can iterate through a background group,
         # but in the case of a parallax group the iter returns
         # both the Backgrounds and the depths. (tuple[Background, float])
-        for backgrounds, depth in self.backgrounds:
-            backgrounds.size = (width, 576)
-
+        for layer, depth in self.backgrounds:
+            layer.size = full_width_size
 
 def main():
     app = MyGame()
