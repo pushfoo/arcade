@@ -153,19 +153,19 @@ class TileMap:
 
 
     Attributes:
-        :tiled_map: The pytiled-parser map object. This can be useful for implementing features
+        tiled_map: The pytiled-parser map object. This can be useful for implementing features
                     that aren't supported by this class by accessing the raw map data directly.
-        :width: The width of the map in tiles. This is the number of tiles, not pixels.
-        :height: The height of the map in tiles. This is the number of tiles, not pixels.
-        :tile_width: The width in pixels of each tile.
-        :tile_height: The height in pixels of each tile.
-        :background_color: The background color of the map.
-        :scaling: A global scaling value to be applied to all Sprites in the map.
-        :sprite_lists: A dictionary mapping SpriteLists to their layer names. This is used
+        width: The width of the map in tiles. This is the number of tiles, not pixels.
+        height: The height of the map in tiles. This is the number of tiles, not pixels.
+        tile_width: The width in pixels of each tile.
+        tile_height: The height in pixels of each tile.
+        background_color: The background color of the map.
+        scaling: A global scaling value to be applied to all Sprites in the map.
+        sprite_lists: A dictionary mapping SpriteLists to their layer names. This is used
                        for all tile layers of the map.
-        :object_lists: A dictionary mapping TiledObjects to their layer names. This is used
+        object_lists: A dictionary mapping TiledObjects to their layer names. This is used
                        for all object layers of the map.
-        :offset: A tuple containing the X and Y position offset values.
+        offset: A tuple containing the X and Y position offset values.
     """
 
     def __init__(
