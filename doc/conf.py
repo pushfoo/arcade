@@ -46,6 +46,7 @@ extensions = [
     'sphinx.ext.autodoc',
     'sphinx.ext.doctest',
     'sphinx.ext.intersphinx',
+    'sphinx.ext.napoleon',
     'sphinx.ext.todo',
     'sphinx.ext.coverage',
     'sphinx.ext.mathjax',
@@ -54,6 +55,13 @@ extensions = [
     'sphinx_copybutton',
     'sphinx_sitemap',
 ]
+
+
+# Config for supporting Google-style docstrings
+# https://www.sphinx-doc.org/en/master/usage/extensions/napoleon.html
+napoleon_use_google_docstring = True
+napoleon_use_numpy_docstring = False
+
 
 # --- Spell check. Never worked well.
 # try:
