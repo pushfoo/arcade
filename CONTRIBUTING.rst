@@ -32,7 +32,7 @@ After Making Changes
 
 After you finish your changes, you should do the following:
 
-1. Test your changes according to the :ref:`Testing` section below
+1. Test your changes according to the :ref:`testing` section below
 2. Submit a
    `pull request <https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/proposing-changes-to-your-work-with-pull-requests>`_
    from your fork to Arcade's development branch.
