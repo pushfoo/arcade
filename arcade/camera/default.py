@@ -53,7 +53,7 @@ class ViewportProjector:
             0, viewport[3],
             -100, 100)
 
-    def use(self):
+    def use(self) -> None:
         """
         Set the window's projection and view matrix.
         Also sets the projector as the windows current camera.
