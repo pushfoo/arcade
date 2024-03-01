@@ -607,7 +607,7 @@ class Camera2D:
         return degrees(atan2(self._data.position[0], self._data.position[1]))
 
     @angle.setter
-    def angle(self, value: float):
+    def angle(self, value: float) -> None:
         """
         Set the 2D UP vector using an angle.
         This starts with 0 degrees as [0, 1]
