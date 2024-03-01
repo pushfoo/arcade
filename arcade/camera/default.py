@@ -46,12 +46,12 @@ class ViewportProjector:
         return self._viewport
 
     @viewport.setter
-    def viewport(self, viewport: Tuple[int, int, int, int]):
+    def viewport(self, viewport: Tuple[int, int, int, int]) -> None:
         self._viewport = viewport
-
-        self._projection_matrix = Mat4.orthogonal_projection(0, viewport[2],
-                                                             0, viewport[3],
-                                                             -100, 100)
+        self._projection_matrix = Mat4.orthogonal_projection(
+            0, viewport[2],
+            0, viewport[3],
+            -100, 100)
 
     def use(self):
         """
