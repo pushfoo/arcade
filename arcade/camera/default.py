@@ -31,11 +31,12 @@ class ViewportProjector:
             window: The window to bind the camera to. Defaults to the currently active window.
         """
         self._window = window or get_window()
-
         self._viewport = viewport or self._window.ctx.viewport
-        self._projection_matrix: Mat4 = Mat4.orthogonal_projection(0.0, self._viewport[2],
-                                                                   0.0, self._viewport[3],
-                                                                   -100, 100)
+        self._projection_matrix: Mat4 = Mat4.orthogonal_projection(
+            0.0, self._viewport[2],
+            0.0, self._viewport[3],
+            -100, 100
+        )
 
     @property
     def viewport(self):
