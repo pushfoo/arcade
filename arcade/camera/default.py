@@ -107,7 +107,7 @@ class DefaultProjector(ViewportProjector):
         """
         super().__init__(window=window)
 
-    def use(self):
+    def use(self) -> None:
         """
         Set the window's Projection and View matrices.
 
