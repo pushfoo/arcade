@@ -39,7 +39,7 @@ class ViewportProjector:
         )
 
     @property
-    def viewport(self):
+    def viewport(self) -> Tuple[int, int, int, int]:
         """
         The viewport use to derive projection and view matrix.
         """
