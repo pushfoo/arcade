@@ -65,7 +65,8 @@ class Camera2D:
         camera_data: Optional[CameraData] = None,
         projection_data: Optional[OrthographicProjectionData] = None
     ):
-        self._window: "Window" = window or get_window()
+        window = window or get_window()
+        self._window: "Window" = window
 
         assert (
             not any((viewport, position, up, zoom)) or not bool(camera_data)
@@ -80,7 +81,7 @@ class Camera2D:
             "Defaulting to OrthographicProjectionData."
         )
 
-        _pos = position or (self._window.width / 2, self._window.height / 2)
+        _pos = position or (window.width / 2, window.height / 2)
         _up = up or (0.0, 1.0)
         self._data = camera_data or CameraData(
             (_pos[0], _pos[1], 0.0),
@@ -89,16 +90,14 @@ class Camera2D:
             zoom or 1.0
         )
 
-        _proj = projection or (
-            -self._window.width/2, self._window.width/2,
-            -self._window.height/2, self._window.height/2
-        )
-        self._projection = projection_data or OrthographicProjectionData(
-            _proj[0], _proj[1],  # Left and Right.
-            _proj[2], _proj[3],  # Bottom and Top.
-            near or 0.0, far or 100.0,  # Near and Far.
+        half_width = window.width/2
+        half_height = window.height/2
 
-            viewport or (0, 0, self._window.width, self._window.height)  # Viewport
+        self._projection: OrthographicProjectionData = projection_data or OrthographicProjectionData(
+            -half_width, half_width, # Left and Right.
+            -half_height, half_height, # Bottom and Top.
+            near or 0.0, far or 100.0,  # Near and Far.
+            viewport or (0, 0, window.width, window.height)  # Viewport
         )
 
         self._ortho_projector: OrthographicProjector = OrthographicProjector(
