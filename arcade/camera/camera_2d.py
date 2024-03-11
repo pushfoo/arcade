@@ -81,7 +81,10 @@ class Camera2D:
             "Defaulting to OrthographicProjectionData."
         )
 
-        _pos = position or (window.width / 2, window.height / 2)
+        half_width = window.width/2
+        half_height = window.height/2
+
+        _pos = position or (half_width, half_height)
         _up = up or (0.0, 1.0)
         self._data = camera_data or CameraData(
             (_pos[0], _pos[1], 0.0),
@@ -89,9 +92,6 @@ class Camera2D:
             (0.0, 0.0, -1.0),
             zoom or 1.0
         )
-
-        half_width = window.width/2
-        half_height = window.height/2
 
         self._projection: OrthographicProjectionData = projection_data or OrthographicProjectionData(
             -half_width, half_width, # Left and Right.
