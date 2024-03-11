@@ -109,21 +109,27 @@ class Camera2D:
 
     @property
     def view_data(self) -> CameraData:
-        """
-        Return the view data for the camera. This includes the
-        position, forward vector, up direction, and zoom.
+        """The view data for the camera.
 
-        If you use any of the built-in arcade camera-controllers
-        or make your own this is the property to access.
+        This includes:
+
+        * the position
+        * forward vector
+        * up direction
+        * zoom.
+
+        Camera controllers use this property. You will need to access
+        it if you use implement a custom one.
         """
         return self._data
 
     @property
     def projection_data(self) -> OrthographicProjectionData:
-        """
-        Return the projection data for the camera.
+        """The projection data for the camera.
+
         This is an Orthographic projection. with a
         right, left, top, bottom, near, and far value.
+
         An easy way to understand the use of the projection is
         that the right value of the projection tells the
         camera what value will be at the right most
@@ -137,11 +143,7 @@ class Camera2D:
 
     @property
     def position(self) -> Tuple[float, float]:
-        """
-        The 2D position of the camera along
-        the X and Y axis. Arcade has the positive
-        Y direction go towards the top of the screen.
-        """
+        """The 2D world position of the camera along the X and Y axes."""
         return self._data.position[:2]
 
     @position.setter
@@ -150,9 +152,9 @@ class Camera2D:
 
     @property
     def left(self) -> float:
-        """
-        The left side of the camera in world space.
-        Use this to check if a sprite is on screen.
+        """The left side of the camera in world space.
+
+        Useful for checking if a :py:class:`~arcade.Sprite` is on screen.
         """
         return self._data.position[0] + self._projection.left/self._data.zoom
 
@@ -162,9 +164,9 @@ class Camera2D:
 
     @property
     def right(self) -> float:
-        """
-        The right side of the camera in world space.
-        Use this to check if a sprite is on screen.
+        """The right edge of the camera in world space.
+
+        Useful for checking if a :py:class:`~arcade.Sprite` is on screen.
         """
         return self._data.position[0] + self._projection.right/self._data.zoom
 
@@ -174,9 +176,9 @@ class Camera2D:
 
     @property
     def bottom(self) -> float:
-        """
-        The bottom side of the camera in world space.
-        Use this to check if a sprite is on screen.
+        """The bottom edge of the camera in world space.
+
+        Useful for checking if a :py:class:`~arcade.Sprite` is on screen.
         """
         return self._data.position[1] + self._projection.bottom/self._data.zoom
 
@@ -190,9 +192,9 @@ class Camera2D:
 
     @property
     def top(self) -> float:
-        """
-        The top side of the camera in world space.
-        Use this to check if a sprite is on screen.
+        """The top edge of the camera in world space.
+
+        Useful for checking if a :py:class:`~arcade.Sprite` is on screen.
         """
         return self._data.position[1] + self._projection.top/self._data.zoom
 
@@ -206,9 +208,10 @@ class Camera2D:
 
     @property
     def projection(self) -> Tuple[float, float, float, float]:
-        """
-        The left, right, bottom, top values
-        that maps world space coordinates to pixel positions.
+        """The camera's left, right, bottom, top projection values.
+
+        These control how the camera projects the world onto the pixels
+        of the screen.
         """
         _p = self._projection
         return _p.left, _p.right, _p.bottom, _p.top
