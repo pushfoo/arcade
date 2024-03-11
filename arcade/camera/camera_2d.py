@@ -69,13 +69,13 @@ class Camera2D:
         self._window: "Window" = window
 
         assert (
-            not any((viewport, position, up, zoom)) or not bool(camera_data)
+            not any((viewport, position, up, zoom)) or not camera_data
         ), (
             "Camera2D Warning: Provided both a CameraData object and raw values. Defaulting to CameraData."
         )
 
         assert (
-            not any((projection, near, far)) or not bool(projection_data)
+            not any((projection, near, far)) or not projection_data
         ), (
             "Camera2D Warning: Provided both an OrthographicProjectionData object and raw values."
             "Defaulting to OrthographicProjectionData."
