@@ -30,13 +30,17 @@ class Camera2D:
     There are also ease of use methods for matching the viewport and projector to the window size.
 
     Provides 4 sets of left, right, bottom, top:
-        - Positional in world space.
-        - Projection without zoom scaling.
-        - Projection with zoom scaling.
-        - Viewport.
 
-    NOTE: Once initialized, the CameraData and OrthographicProjectionData SHOULD NOT be changed.
-    Only getter properties are provided through data and projection_data respectively.
+    * View Data, or where the camera is in
+    * Projection without zoom scaling.
+    * Projection with zoom scaling.
+    * Viewport in screen pixels
+
+    .. warning:: Do not replace the ``camera_data`` and ``projection_data``
+                 instances after initialization!
+
+    Replacing the camera data and projection data may break controllers. Their
+    contents are exposed via properties rather than directly to prevent this.
 
     :param window: The Arcade Window to bind the camera to.
             Defaults to the currently active window.
@@ -49,9 +53,10 @@ class Camera2D:
                 bounds which the camera projects to the viewport.
     :param near: The near clipping plane of the camera.
     :param far: The far clipping plane of the camera.
-    :param camera_data: A CameraData PoD which describes the viewport, position, up, and zoom
-    :param projection_data: A OrthographicProjectionData PoD which describes the left, right, top,
-                        bottom, far, near planes for an orthographic projection.
+    :param camera_data: A :py:class:`~arcade.camera.data.CameraData`
+        describing the viewport, position, up, and zoom.
+    :param projection_data: A :py:class:`~arcade.camera.data.OrthographicProjectionData`
+        which describes the left, right, top, bottom, far, near planes for an orthographic projection.
     """
     def __init__(self, *,
         window: Optional["Window"] = None,
