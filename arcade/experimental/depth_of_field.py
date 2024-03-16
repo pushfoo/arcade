@@ -4,6 +4,7 @@ If Python and Arcade are installed, this example can be run from the command lin
 python -m arcade.experimental.examples.array_backed_grid
 """
 from typing import Tuple, Optional
+from textwrap import dedent
 from contextlib import contextmanager
 from math import cos, pi
 from random import uniform, randint
@@ -61,41 +62,39 @@ class DepthOfField:
         )
 
         self._render_program = self._win.ctx.program(
-            vertex_shader=(
-                "#version 330\n"
-                "\n"
-                "in vec2 in_vert;\n"
-                "in vec2 in_uv;\n"
-                "\n"
-                "out vec2 out_uv;\n"
-                "\n"
-                "void main(){\n"
-                "   gl_Position = vec4(in_vert, 0.0, 1.0);\n"
-                "   out_uv = in_uv;\n"
-                "}\n"
-            ),
-            fragment_shader=(
-                "#version 330\n"
-                "\n"
-                "uniform sampler2D texture_0;\n"
-                "uniform sampler2D texture_1;\n"
-                "uniform sampler2D depth_0;\n"
-                "\n"
-                "uniform float focus_depth;\n"
-                "\n"
-                "in vec2 out_uv;\n"
-                "\n"
-                "out vec4 frag_colour;\n"
-                "\n"
-                "void main() {\n"
-                "   float depth_val = texture(depth_0, out_uv).x;\n"
-                "   float depth_adjusted = min(1.0, 2.0 * abs(depth_val - focus_depth));\n"
-                "   vec4 crisp_tex = texture(texture_0, out_uv);\n"
-                "   vec3 blur_tex = texture(texture_1, out_uv).rgb;\n"
-                "   frag_colour = mix(crisp_tex, vec4(blur_tex, crisp_tex.a), depth_adjusted);\n"
-                "   //if (depth_adjusted < 0.1){frag_colour = vec4(1.0, 0.0, 0.0, 1.0);}\n"
-                "}\n"
-            )
+            vertex_shader=dedent(
+                """#version 330
+
+                in vec2 in_vert;
+                in vec2 in_uv;
+
+                out vec2 out_uv;
+
+                void main(){
+                   gl_Position = vec4(in_vert, 0.0, 1.0);
+                   out_uv = in_uv;
+                }"""),
+            fragment_shader=dedent(
+                """#version 330
+
+                uniform sampler2D texture_0;
+                uniform sampler2D texture_1;
+                uniform sampler2D depth_0;
+
+                uniform float focus_depth;
+
+                in vec2 out_uv;
+
+                out vec4 frag_colour;
+
+                void main() {
+                   float depth_val = texture(depth_0, out_uv).x;
+                   float depth_adjusted = min(1.0, 2.0 * abs(depth_val - focus_depth));
+                   vec4 crisp_tex = texture(texture_0, out_uv);
+                   vec3 blur_tex = texture(texture_1, out_uv).rgb;
+                   frag_colour = mix(crisp_tex, vec4(blur_tex, crisp_tex.a), depth_adjusted);
+                   //if (depth_adjusted < 0.1){frag_colour = vec4(1.0, 0.0, 0.0, 1.0);}
+                }""")
         )
         self._render_program['texture_0'] = 0
         self._render_program['texture_1'] = 1
