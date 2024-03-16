@@ -9,7 +9,7 @@ from contextlib import contextmanager
 from math import cos, pi
 from random import uniform, randint
 
-from arcade.types import Color
+from arcade.types import Color, RGBA255
 
 from arcade import Window, SpriteSolidColor, SpriteList
 
@@ -20,10 +20,16 @@ from arcade import get_window, draw_text
 
 class DepthOfField:
 
-    def __init__(self, size: Optional[Tuple[int, int]] = None):
+    def __init__(
+            self,
+            size: Optional[Tuple[int, int]] = None,
+            clear_color: RGBA255 = Color(155, 155, 155, 255)
+    ):
         self._geo = geometry.quad_2d_fs()
         self._win = get_window()
+
         size = size or self._win.size
+        self._clear_color = Color.from_iterable(clear_color)
 
         self.stale = True
 
@@ -109,7 +115,7 @@ class DepthOfField:
         previous_fbo = self._win.ctx.active_framebuffer
         try:
             self._win.ctx.enable(self._win.ctx.DEPTH_TEST)
-            self._render_target.clear((155.0, 155.0, 155.0, 255.0))
+            self._render_target.clear(self._clear_color)
             self._render_target.use()
             yield self._render_target
         finally:
@@ -136,8 +142,8 @@ class App(Window):
 
     def __init__(self):
         super().__init__()
-        self.t = 0.0
-        self.l: SpriteList = SpriteList()
+        self.time: float = 0.0
+        self.sprites: SpriteList = SpriteList()
         for _ in range(100):
             depth = uniform(-100, 100)
             color = Color.from_gray(int(255 * (depth + 100) / 200))
@@ -148,17 +154,18 @@ class App(Window):
                 uniform(0, 360)
             )
             s.depth = depth
-            self.l.append(s)
+            self.sprites.append(s)
         self.dof = DepthOfField()
 
     def on_update(self, delta_time: float):
-        self.t += delta_time
-        self.dof._render_program["focus_depth"] = round(16 * (cos(pi * 0.1 * self.t)*0.5 + 0.5)) / 16
+        self.time += delta_time
+        self.dof._render_program["focus_depth"] = round(
+            16 * (cos(pi * 0.1 * self.time) * 0.5 + 0.5)) / 16
 
     def on_draw(self):
         self.clear()
         with self.dof.draw_into():
-            self.l.draw(pixelated=True)
+            self.sprites.draw(pixelated=True)
         self.use()
 
         self.dof.render()
