@@ -1,3 +1,8 @@
+"""An experimental depth-of-field example.
+
+If Python and Arcade are installed, this example can be run from the command line with:
+python -m arcade.experimental.examples.array_backed_grid
+"""
 from typing import Tuple, Optional
 from contextlib import contextmanager
 from math import cos, pi
