@@ -9,9 +9,12 @@ from contextlib import contextmanager
 from math import cos, pi
 from random import uniform, randint
 
+from pyglet.graphics import Batch
+
+from arcade.color import RED
 from arcade.types import Color, RGBA255
 
-from arcade import Window, SpriteSolidColor, SpriteList
+from arcade import Window, SpriteSolidColor, SpriteList, Text
 
 from arcade.gl import geometry, NEAREST, Program
 from arcade.experimental.postprocessing import GaussianBlur
@@ -144,10 +147,25 @@ class DepthOfField:
 
 class App(Window):
 
-    def __init__(self):
+    def __init__(
+            self,
+            text_color: RGBA255 = RED,
+            focus_range: float = 16.0
+    ):
         super().__init__()
         self.time: float = 0.0
         self.sprites: SpriteList = SpriteList()
+        self._batch = Batch()
+        self.focus_range = focus_range
+        self.indicator_label = Text(
+            f"Focus depth: {0}",
+            self.width / 2, self.height / 2,
+            text_color,
+            align="center",
+            anchor_x="center",
+            batch=self._batch
+        )
+
         for _ in range(100):
             depth = uniform(-100, 100)
             color = Color.from_gray(int(255 * (depth + 100) / 200))
@@ -163,19 +181,17 @@ class App(Window):
 
     def on_update(self, delta_time: float):
         self.time += delta_time
-        self.dof.render_program["focus_depth"] = round(
-            16 * (cos(pi * 0.1 * self.time) * 0.5 + 0.5)) / 16
+        raw_focus = self.focus_range * (cos(pi * 0.1 * self.time) * 0.5 + 0.5)
+        self.dof.render_program["focus_depth"] = raw_focus / self.focus_range
+        self.indicator_label.value = f"Focus depth: {raw_focus:.3f} / {self.focus_range}"
 
     def on_draw(self):
         self.clear()
         with self.dof.draw_into():
             self.sprites.draw(pixelated=True)
         self.use()
-
         self.dof.render()
-        draw_text(str(self.dof.render_program["focus_depth"]), self.width / 2, self.height / 2, (255, 0, 0, 255),
-                  align="center")
-
+        self._batch.draw()
 
 if __name__ == '__main__':
     App().run()
