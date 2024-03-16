@@ -13,7 +13,7 @@ from arcade.types import Color, RGBA255
 
 from arcade import Window, SpriteSolidColor, SpriteList
 
-from arcade.gl import geometry, NEAREST
+from arcade.gl import geometry, NEAREST, Program
 from arcade.experimental.postprocessing import GaussianBlur
 from arcade import get_window, draw_text
 
@@ -109,6 +109,10 @@ class DepthOfField:
         self._render_program['texture_1'] = 1
         self._render_program['depth_0'] = 2
 
+    @property
+    def render_program(self) -> Program:
+        return self._render_program
+
     @contextmanager
     def draw_into(self):
         self.stale = True
@@ -159,7 +163,7 @@ class App(Window):
 
     def on_update(self, delta_time: float):
         self.time += delta_time
-        self.dof._render_program["focus_depth"] = round(
+        self.dof.render_program["focus_depth"] = round(
             16 * (cos(pi * 0.1 * self.time) * 0.5 + 0.5)) / 16
 
     def on_draw(self):
@@ -169,7 +173,7 @@ class App(Window):
         self.use()
 
         self.dof.render()
-        draw_text(str(self.dof._render_program["focus_depth"]), self.width / 2, self.height / 2, (255, 0, 0, 255),
+        draw_text(str(self.dof.render_program["focus_depth"]), self.width / 2, self.height / 2, (255, 0, 0, 255),
                   align="center")
 
 
