@@ -8,6 +8,9 @@ from textwrap import dedent
 from contextlib import contextmanager
 from math import cos, pi
 from random import uniform, randint
+
+from arcade.types import Color
+
 from arcade import Window, SpriteSolidColor, SpriteList
 
 from arcade.gl import geometry, NEAREST
@@ -136,15 +139,15 @@ class App(Window):
         self.t = 0.0
         self.l: SpriteList = SpriteList()
         for _ in range(100):
-            d = uniform(-100, 100)
-            c = int(255 * (d + 100) / 200)
+            depth = uniform(-100, 100)
+            color = Color.from_gray(int(255 * (depth + 100) / 200))
             s = SpriteSolidColor(
                 randint(100, 200), randint(100, 200),
                 uniform(20, self.width - 20), uniform(20, self.height - 20),
-                (c, c, c, 255),
+                color,
                 uniform(0, 360)
             )
-            s.depth = d
+            s.depth = depth
             self.l.append(s)
         self.dof = DepthOfField()
 
