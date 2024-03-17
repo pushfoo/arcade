@@ -38,6 +38,7 @@ class DepthOfField:
     :param size: The size of the buffers.
     :param clear_color: The color which will be used as the background.
     """
+
     def __init__(
             self,
             size: Optional[Tuple[int, int]] = None,
@@ -181,7 +182,7 @@ class App(Window):
         self._batch = Batch()
         self.focus_range = focus_range
         self.indicator_label = Text(
-            f"Focus depth: {0}",
+            f"Focus depth: {0:.3f} / {focus_range}",
             self.width / 2, self.height / 2,
             text_color,
             align="center",
