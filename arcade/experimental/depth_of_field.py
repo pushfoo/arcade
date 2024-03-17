@@ -5,20 +5,18 @@ python -m arcade.experimental.examples.array_backed_grid
 """
 from typing import Tuple, Optional
 from textwrap import dedent
-from contextlib import contextmanager
 from math import cos, pi
 from random import uniform, randint
+from contextlib import contextmanager
 
 from pyglet.graphics import Batch
 
+from arcade import get_window, Window, SpriteSolidColor, SpriteList, Text
 from arcade.color import RED
 from arcade.types import Color, RGBA255
 
-from arcade import Window, SpriteSolidColor, SpriteList, Text
-
 from arcade.gl import geometry, NEAREST, Program, Texture2D
 from arcade.experimental.postprocessing import GaussianBlur
-from arcade import get_window, draw_text
 
 
 class DepthOfField:
@@ -207,6 +205,6 @@ class App(Window):
         self.dof.render()
         self._batch.draw()
 
+
 if __name__ == '__main__':
     App().run()
-
