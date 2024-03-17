@@ -1,9 +1,12 @@
 """An experimental depth-of-field example.
 
 It uses the depth attribute of along with blurring and shaders to
-roughly approximate depth-based blur effects.
+roughly approximate depth-based blur effects. The focus bounces
+back forth automatically between a maximum and minimum depth value
+based on time. Adjust the arguments to the App class at the bottom
+of the file to change the speed.
 
-For each frame, it does the following:
+This example works by doing the following for each frame:
 
 1. Render a depth value for pixel into a buffer
 2. Render a gaussian blurred version of the scene
@@ -170,17 +173,25 @@ class DepthOfField:
 
 
 class App(Window):
+    """Window subclass to hold sprites and rendering helpers.
 
+    :param text_color: The color of the focus indicator.
+    :param focus_range: The range the focus value will oscillate between.
+    :param focus_change_speed: How fast the focus bounces back and forth
+        between the ``-focus_range`` and ``focus_range``.
+    """
     def __init__(
             self,
             text_color: RGBA255 = RED,
-            focus_range: float = 16.0
+            focus_range: float = 16.0,
+            focus_change_speed: float = 0.1
     ):
         super().__init__()
         self.time: float = 0.0
         self.sprites: SpriteList = SpriteList()
         self._batch = Batch()
-        self.focus_range = focus_range
+        self.focus_range: float = focus_range
+        self.focus_change_speed: float = focus_change_speed
         self.indicator_label = Text(
             f"Focus depth: {0:.3f} / {focus_range}",
             self.width / 2, self.height / 2,
@@ -207,7 +218,7 @@ class App(Window):
 
     def on_update(self, delta_time: float):
         self.time += delta_time
-        raw_focus = self.focus_range * (cos(pi * 0.1 * self.time) * 0.5 + 0.5)
+        raw_focus = self.focus_range * (cos(pi * self.focus_change_speed * self.time) * 0.5 + 0.5)
         self.dof.render_program["focus_depth"] = raw_focus / self.focus_range
         self.indicator_label.value = f"Focus depth: {raw_focus:.3f} / {self.focus_range}"
 
