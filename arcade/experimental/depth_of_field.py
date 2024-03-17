@@ -20,7 +20,11 @@ from arcade.experimental.postprocessing import GaussianBlur
 
 
 class DepthOfField:
+    """A depth-of-field effect we can use as a render context manager.
 
+    :param size: The size of the buffers.
+    :param clear_color: The color which will be used as the background.
+    """
     def __init__(
             self,
             size: Optional[Tuple[int, int]] = None,
