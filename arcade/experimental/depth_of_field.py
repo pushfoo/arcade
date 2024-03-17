@@ -16,7 +16,7 @@ from arcade.types import Color, RGBA255
 
 from arcade import Window, SpriteSolidColor, SpriteList, Text
 
-from arcade.gl import geometry, NEAREST, Program
+from arcade.gl import geometry, NEAREST, Program, Texture2D
 from arcade.experimental.postprocessing import GaussianBlur
 from arcade import get_window, draw_text
 
@@ -29,13 +29,14 @@ class DepthOfField:
             clear_color: RGBA255 = Color(155, 155, 155, 255)
     ):
         self._geo = geometry.quad_2d_fs()
-        self._win = get_window()
+        self._win: Window = get_window()
 
-        size = size or self._win.size
-        self._clear_color = Color.from_iterable(clear_color)
+        size: Tuple[int, int] = size or self._win.size
+        self._clear_color: Color = Color.from_iterable(clear_color)
 
         self.stale = True
 
+        # Set up our depth buffer to hold per-pixel depth
         self._render_target = self._win.ctx.framebuffer(
             color_attachments=[
                 self._win.ctx.texture(
@@ -51,16 +52,16 @@ class DepthOfField:
             )
         )
 
+        # Set up everything we need to perform blur and store results.
+        # This includes the blur effect, a framebuffer, and an instance
+        # variable to store the returned texture holding blur results.
         self._blur_process = GaussianBlur(
             size,
-            10,
-            2.0,
-            2.0,
+            kernel_size=10,
+            sigma=2.0,
+            multiplier=2.0,
             step=4
         )
-
-        self._blurred = None
-
         self._blur_target = self._win.ctx.framebuffer(
             color_attachments=[
                 self._win.ctx.texture(
@@ -72,7 +73,11 @@ class DepthOfField:
                 )
             ]
         )
+        self._blurred: Optional[Texture2D] = None
 
+        # To keep this example in one file, we use strings for our
+        # our shaders. You may want to use pathlib.Path.read_text in
+        # your own code instead.
         self._render_program = self._win.ctx.program(
             vertex_shader=dedent(
                 """#version 330
@@ -108,12 +113,15 @@ class DepthOfField:
                    //if (depth_adjusted < 0.1){frag_colour = vec4(1.0, 0.0, 0.0, 1.0);}
                 }""")
         )
+
+        # Set the buffers the shader program will use
         self._render_program['texture_0'] = 0
         self._render_program['texture_1'] = 1
         self._render_program['depth_0'] = 2
 
     @property
     def render_program(self) -> Program:
+        """The compiled shader for this effect."""
         return self._render_program
 
     @contextmanager
@@ -166,6 +174,7 @@ class App(Window):
             batch=self._batch
         )
 
+        # Randomize sprite depth, size, and angle, but set color from depth.
         for _ in range(100):
             depth = uniform(-100, 100)
             color = Color.from_gray(int(255 * (depth + 100) / 200))
@@ -177,6 +186,7 @@ class App(Window):
             )
             s.depth = depth
             self.sprites.append(s)
+
         self.dof = DepthOfField()
 
     def on_update(self, delta_time: float):
@@ -187,8 +197,12 @@ class App(Window):
 
     def on_draw(self):
         self.clear()
+
+        # Render the depth-of-field layer's frame buffer
         with self.dof.draw_into():
             self.sprites.draw(pixelated=True)
+
+        # Draw the blurred frame buffer and then the focus display
         self.use()
         self.dof.render()
         self._batch.draw()
