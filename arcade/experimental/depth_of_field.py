@@ -24,7 +24,7 @@ class DepthOfField:
     def __init__(
             self,
             size: Optional[Tuple[int, int]] = None,
-            clear_color: RGBA255 = Color(155, 155, 155, 255)
+            clear_color: RGBA255 = (155, 155, 155, 255)
     ):
         self._geo = geometry.quad_2d_fs()
         self._win: Window = get_window()
