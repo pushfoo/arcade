@@ -1,5 +1,18 @@
 """An experimental depth-of-field example.
 
+It uses the depth attribute of along with blurring and shaders to
+roughly approximate depth-based blur effects.
+
+For each frame, it does the following:
+
+1. Render a depth value for pixel into a buffer
+2. Render a gaussian blurred version of the scene
+3. For each pixel, use the current depth value to lerp between the
+   blurred and unblurred versions of the scene.
+
+This is more expensive than rendering the scene directly, but it's
+both easier and more performant than more accurate blur approaches.
+
 If Python and Arcade are installed, this example can be run from the command line with:
 python -m arcade.experimental.examples.array_backed_grid
 """
