@@ -376,6 +376,8 @@ class BasicSprite:
         else:
             a = self._color.a
 
+        # We don't handle alpha and .visible interactions here
+        # because it's implemented in SpriteList._update_color
         self._color = Color(r, g, b, a)
 
         for sprite_list in self.sprite_lists:
