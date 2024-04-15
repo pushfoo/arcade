@@ -581,7 +581,7 @@ class Text:
 
 def create_text_sprite(
     text: str,
-    color: RGBA255 = arcade.color.WHITE,
+    color: RGBOrA255 = arcade.color.WHITE,
     font_size: float = 12,
     width: Optional[int] = None,
     align: str = "left",
@@ -591,7 +591,7 @@ def create_text_sprite(
     anchor_x: str = "left",
     multiline: bool = False,
     texture_atlas: Optional[arcade.TextureAtlas] = None,
-    background_color: Optional[RGBA255] = None,
+    background_color: RGBOrA255 = arcade.color.TRANSPARENT_BLACK,
 ) -> arcade.Sprite:
     """
     Creates a sprite containing text based off of :py:class:`~arcade.Text`.
@@ -609,7 +609,8 @@ def create_text_sprite(
     a black box drawn in its place.
 
     :param text: Initial text to display. Can be an empty string
-    :param color: Color of the text as a tuple or list of 3 (RGB) or 4 (RGBA) integers
+    :param color: The color of the text as a tuple of 3 (RGB) or 4 (RGBA) integers,
+        or an :py:class:`~arcade.Color`.
     :param font_size: Size of the text in points
     :param width: A width limit in pixels
     :param align: Horizontal alignment; values other than "left" require width to be set
@@ -621,9 +622,13 @@ def create_text_sprite(
     :param multiline: Requires width to be set; enables word wrap rather than clipping
     :param texture_atlas: The texture atlas to use for the
         newly created texture. The default global atlas will be used if this is None.
-    :param background_color: The background color of the text. If None, the background
-        will be transparent.
+    :param background_color: The background color of the text. By default, this is
+        :py:attr:`~arcade.color.TRANSPARENT_BLACK`.
     """
+    # Validate immediately before we do anything expensive
+    color = Color.from_iterable(color)
+    background_color = Color.from_iterable(background_color)
+
     text_object = Text(
         text,
         x=0,
@@ -651,7 +656,7 @@ def create_text_sprite(
         texture_atlas = arcade.get_window().ctx.default_atlas
     texture_atlas.add(texture)
     with texture_atlas.render_into(texture) as fbo:
-        fbo.clear(color=background_color or arcade.color.TRANSPARENT_BLACK)
+        fbo.clear(color=background_color)
         text_object.draw()
 
     return arcade.Sprite(
