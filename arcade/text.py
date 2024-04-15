@@ -646,10 +646,7 @@ def create_text_sprite(
         multiline=multiline,
     )
 
-    size = (
-        int(text_object.right - text_object.left),
-        int(text_object.top - text_object.bottom),
-    )
+    size = text_object.content_size
     text_object.y = -text_object.bottom
     texture = arcade.Texture.create_empty(text, size)
 
