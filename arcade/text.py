@@ -593,15 +593,16 @@ def create_text_sprite(
     texture_atlas: Optional[arcade.TextureAtlas] = None,
     background_color: RGBOrA255 = arcade.color.TRANSPARENT_BLACK,
 ) -> arcade.Sprite:
-    """
-    Creates a sprite containing text based off of :py:class:`~arcade.Text`.
+    """Create a sprite of the given text by drawing to a new texture.
 
-    Internally this creates a Text object and an empty texture. It then uses either the
-    provided texture atlas, or gets the default one, and draws the Text object into the
-    texture atlas.
+    Internally, this works as follows:
 
-    It then creates a sprite referencing the newly created texture, and positions it
-    accordingly, and that is final result that is returned from the function.
+    #. Validate the passed colors
+    #. Create a :py:class:`~arcade.Text` object
+    #. Create an empty texture with the same width as the text object
+    #. If ``texture_atlas`` is ``None``, use the default :py:class:`~arcade.TextureAtlas`
+    #. Draw the :py:class:~arcade.Text` object into the chosen atlas
+    #. Create and return a :py:class:`~arcade.Sprite` using the new texture
 
     If you are providing a custom texture atlas, something important to keep in mind is
     that the resulting Sprite can only be added to SpriteLists which use that atlas. If
