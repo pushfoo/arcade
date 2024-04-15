@@ -591,7 +591,7 @@ def create_text_sprite(
     anchor_x: str = "left",
     multiline: bool = False,
     texture_atlas: Optional[arcade.TextureAtlas] = None,
-    background_color: RGBOrA255 = arcade.color.TRANSPARENT_BLACK,
+    background_color: RGBOrA255 = arcade.color.TRANSPARENT_BLACK
 ) -> arcade.Sprite:
     """Create a sprite of the given text by drawing to a new texture.
 
