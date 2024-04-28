@@ -4,9 +4,10 @@ These are placed in their own module to simplify imports due to their
 wide usage throughout Arcade's camera code.
 """
 from __future__ import annotations
-from typing import Protocol, Tuple, Iterator, Optional
+from typing import Protocol, Tuple, Iterator, Optional, Generator, Union
 from contextlib import contextmanager
 
+from typing_extensions import Self
 from pyglet.math import Vec3
 
 
@@ -255,6 +256,8 @@ class Projector(Protocol):
 
     """
 
+    _window: Union["Window", None]
+
     def use(self) -> None:
         """Set the GL context to use this projector and its settings.
 
@@ -287,7 +290,7 @@ class Projector(Protocol):
         ...
 
     @contextmanager
-    def activate(self) -> Iterator[Projector]:
+    def activate(self) -> Generator[Self, None, None]:
         """Set this camera as the current one, then undo it after.
 
         This method is a :ref+external:`context manager <context-managers>`
@@ -304,7 +307,12 @@ class Projector(Protocol):
                 _ = 1 / 0  # Guaranteed ZeroDivisionError
 
         """
-        ...
+        previous_projector = self._window.current_camera
+        try:
+            self.use()
+            yield self
+        finally:
+            previous_projector.use()
 
     def map_screen_to_world_coordinate(
             self,
