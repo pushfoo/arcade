@@ -184,6 +184,45 @@ class PerspectiveProjectionData:
 
 
 class Projection(Protocol):
+    """Matches the data universal in Arcade's projection data objects.
+
+    There are multiple types of projections used in games, but all the
+    common ones share key features. This :py:class:`~typing.Protocol`:
+
+    #. Defines those shared elements
+    #. Annotates these in code for both humans and automated type
+       checkers
+
+    The specific implementations which match it are used inside of
+    implementations of Arcade's :py:class:`.Projector` behavior. All
+    of these projectors rely on a ``viewport`` as well as ``near`` and
+    ``far`` values.
+
+    The ``viewport`` is measured in screen pixels. By default, the
+    conventions for this are the same as the rest of Arcade and
+    OpenGL:
+
+    * X is measured rightward from left of the screen
+    * Y is measured up from the bottom of the screen
+
+    Although the ``near`` and ``far`` values are describe the cutoffs
+    for what the camera sees in world space, the exact meaning differs
+    between projection type.
+
+    .. list-table::
+       :header-rows: 1
+
+       * - Common Projection Type
+         - Meaning of ``near`` & ``far``
+
+       * - Simple Orthographic
+         - The Z position in world space
+
+       * - Perspective & Isometric
+         - Where the rear and front clipping planes sit along a
+           camera's :py:attr:`.CameraData.forward` vector.
+
+    """
     viewport: Tuple[int, int, int, int]
     near: float
     far: float
