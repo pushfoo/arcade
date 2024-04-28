@@ -190,12 +190,81 @@ class Projection(Protocol):
 
 
 class Projector(Protocol):
+    """Projects from world coordinates to viewport pixel coordinates.
+
+    Projectors also support converting in the opposite direction from
+    screen pixel coordinates to world space coordinates.
+
+    The two key spatial methods which do this are:
+
+    .. list-table::
+       :header-rows: 1
+       * - Method
+         - Action
+
+       * - :py:meth:`.project`
+         - Turn world coordinates into pixel coordinates relative
+           to the origin (bottom left by default).
+
+       * - :py:meth:`.unproject`
+         - Convert screen pixel coordinates into world space.
+
+    .. note: Every :py:class:`.Camera` is also a kind of projector.
+
+    The other required methods are for helping manage which camera is
+    currently used to draw.
+
+    """
 
     def use(self) -> None:
+        """Set the GL context to use this projector and its settings.
+
+        .. warning:: You may be looking for:py:meth:`.activate`!
+
+                     This method only sets rendering state for a given
+                     projector. Since it doesn't restore any afterward,
+                     it's easy to misuse in ways which can cause bugs
+                     or temporarily break a game's rendering until
+                     relaunch. For reliable, automatic clean-up see
+                     the :py:meth:`.activate` method instead.
+
+        If you are implementing your own custom projector, this method
+        should only:
+
+        #. Set the Arcade :py:class:`~arcade.Window`'s
+           :py:attr:`~arcade.Window.current_camera` to this object
+        #. Calculate any required view and projection matrices
+        #. Set any resulting values on the current
+           :py:class:`~arcade.context.ArcadeContext`, including the:
+
+           * :py:attr:`~arcade.context.ArcadeContext.viewport`
+           * :py:attr:`~arcade.context.ArcadeContext.view_matrix`
+           * :py:attr:`~arcade.context.ArcadeContext.projection_matrix`
+
+        This method should **never** handle cleanup. That is the
+        responsibility of :py:attr:`.activate`.
+
+        """
         ...
 
     @contextmanager
     def activate(self) -> Iterator[Projector]:
+        """Set this camera as the current one, then undo it after.
+
+        This method is a :ref+external:`context manager <context-managers>`
+        you can use inside ``with`` blocks. Using it this way guarantees
+        that the old camera and its settings will be restored, even if an
+        exception occurs:
+
+        .. code-block:: python
+
+           # Despite an Exception, the previous camera and its settings
+           # will be restored at the end of the with block below:
+           with projector_instance.activate():
+                sprite_list.draw()
+                _ = 1 / 0  # Guaranteed ZeroDivisionError
+
+        """
         ...
 
     def map_screen_to_world_coordinate(
