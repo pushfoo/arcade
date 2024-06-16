@@ -49,6 +49,11 @@ MEMBER_SPECIAL_RULES = {
     "arcade.ArcadeContext" : RULE_SHOW_INHERITANCE + RULE_INHERITED_MEMBERS
 }
 
+SHOW_INHERITANCE = (':show-inheritance:',)
+INHERITED_MEMBERS = (':inherited-members:',)
+MEMBER_SPECIAL_RULES = {
+    "arcade.ArcadeContext" : SHOW_INHERITANCE + INHERITED_MEMBERS
+}
 
 # Module and class members to exclude
 EXCLUDED_MEMBERS = [
@@ -383,7 +388,6 @@ def get_file_declarations(
         print(f"Failed to open {filepath}: {e}")
 
     return parsed_values
-
 
 
 # --- 4. API file generation ---
