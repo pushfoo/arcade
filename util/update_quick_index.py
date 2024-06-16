@@ -25,7 +25,6 @@ from typing import Iterable, Generator
 # Ensure we get utility & arcade imports first
 sys.path.insert(0, str(Path(__file__).parent.resolve()))
 
-
 from doc_helpers import (
     SharedPaths,
     EMPTY_TUPLE,
@@ -51,9 +50,6 @@ MEMBER_SPECIAL_RULES = {
 
 SHOW_INHERITANCE = (':show-inheritance:',)
 INHERITED_MEMBERS = (':inherited-members:',)
-MEMBER_SPECIAL_RULES = {
-    "arcade.ArcadeContext" : SHOW_INHERITANCE + INHERITED_MEMBERS
-}
 
 
 # Module and class members to exclude
