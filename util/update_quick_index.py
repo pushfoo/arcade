@@ -20,7 +20,7 @@ from collections.abc import Mapping
 
 from pathlib import Path
 from textwrap import dedent
-from typing import Generator
+from typing import Generator, Type, cast, Iterable, Union
 
 # Ensure we get utility & arcade imports first
 sys.path.insert(0, str(Path(__file__).parent.resolve()))
@@ -29,6 +29,7 @@ from doc_helpers import (
     SharedPaths,
     EMPTY_TUPLE,
     get_module_path,
+    ParseKind,
     NotExcludedBy,
     Vfs
 )
@@ -39,13 +40,34 @@ ARCADE_ROOT = SharedPaths.ARCADE_ROOT
 API_DOC_GENERATION_DIR = SharedPaths.API_DOC_ROOT / "api"
 QUICK_INDEX_FILE_PATH = API_DOC_GENERATION_DIR / "quick_index.rst"
 
-# --- 1. Special rules & excludes ---
 
+# Return structure of parsing looks like this
+DeclarationsDict = dict[
+    Union[str, Type[ParseKind]],  # "kind" name or "*"
+    list[str]  # A list of member names
+]
+
+
+Class = ParseKind.new(
+    'Class', re.compile(r"^class ([A-Za-z0-9]+[^\(:]*)"))
+Function = ParseKind.new(
+    'Function', re.compile("^def ([a-z][a-z0-9_]*)"),
+    crossref_directive=':py:func:')
+Constant = ParseKind.new(
+    'Annotation', re.compile("^(?!LOG =)([A-Za-z][A-Za-z0-9_]*) ="),
+    autodoc_directive='autoattribute',
+    crossref_directive=':py:data:')
+
+
+# --- 1. Special rules & excludes ---
+RULE_MEMBERS = (':members:',)
 RULE_SHOW_INHERITANCE = (':show-inheritance:',)
 RULE_INHERITED_MEMBERS = (':inherited-members:',)
 
+
 MEMBER_SPECIAL_RULES = {
-    "arcade.ArcadeContext" : RULE_SHOW_INHERITANCE + RULE_INHERITED_MEMBERS
+    "arcade.ArcadeContext" : RULE_SHOW_INHERITANCE + RULE_INHERITED_MEMBERS,
+    Class: RULE_MEMBERS
 }
 
 # Module and class members to exclude
@@ -314,28 +336,12 @@ API_FILE_TO_TITLE_AND_MODULES = {
 
 # --- 3. "Parsing" declaration names via regex ---
 
-# Return structure of parsing looks like this
-DeclarationsDict = dict[
-    str,  # "kind" name or "*"
-    list[str]  # A list of member names
-]
-
-# Patterns + default config dict
-CLASS_RE = re.compile(r"^class ([A-Za-z0-9]+[^\(:]*)")
-FUNCTION_RE = re.compile("^def ([a-z][a-z0-9_]*)")
-TYPE_RE = re.compile("^(?!LOG =)([A-Za-z][A-Za-z0-9_]*) =")
-DEFAULT_EXPRESSIONS =  {
-    'class': CLASS_RE,
-    'function': FUNCTION_RE,
-    # 'type': TYPE_RE
-}
-
 
 def get_file_declarations(
         filepath: Path,
-        kind_to_regex: Mapping[str, re.Pattern] = DEFAULT_EXPRESSIONS
+        kinds: Iterable[Type[ParseKind]] = (Class, Function)
 ) -> DeclarationsDict:
-    """Use a mapping of kind names to regex to get declarations.
+    """Use an iterable of ParseKind instances to regex for declarations.
 
     The returned dict will have a list for each name in kind_to_regex,
     plus a '*' key which retains all values in their original ordering.
@@ -359,18 +365,20 @@ def get_file_declarations(
     print("Parsing: ", filepath)
     filename = filepath.name
 
+    kinds = tuple(kinds)
+
     # Set up our return value dict
     parsed_values = {'*':[]}
-    for kind_name, exp in kind_to_regex.items():
+    for kind in kinds:
         # print(f"  ...with {group_name} expression {e.pattern!r}")
-        parsed_values[kind_name] = []
+        parsed_values[kind] = []
 
     try:
         with open(filepath, encoding="utf8") as file_pointer:
             for line_no, line in enumerate(file_pointer, start=1):
                 try:
-                    for kind, exp in kind_to_regex.items():
-                        parsed_raw = exp.findall(line)
+                    for kind in kinds:
+                        parsed_raw = kind.findall(line)
                         parsed_values[kind].extend(parsed_raw)
                         parsed_values['*'].extend(parsed_raw)
 
@@ -431,10 +439,11 @@ def generate_api_file(api_file_name: str, vfs: Vfs):
                 f"WARNING: {module_name!r} appears to contain tests."
                 f"Those belong in the 'tests/' directory!")
             continue
-
+        KINDS = (Class, Function)
         # TODO: Figure out how to reliably parse & render types?
         module_path = get_module_path(module_name)
-        member_lists = get_file_declarations(module_path)
+        member_lists = get_file_declarations(
+            module_path, kinds=KINDS)
 
         # Skip a file if we got no imports
         if not len(member_lists['*']):
@@ -444,42 +453,34 @@ def generate_api_file(api_file_name: str, vfs: Vfs):
                 f"config?")
             continue
 
-        def iter_declarations(
-                kind: str
-        ) -> Generator[tuple[str, str], None, None]:
-            kind_list = member_lists[kind]
-            for name in filter(member_not_excluded, kind_list):
-                yield name, f"{module_name}.{name}"
+        def _iter_items(all_items: DeclarationsDict) -> Generator[ParseKind, None, None]:
+            for kind in KINDS:
+                for item in filter(member_not_excluded, all_items[kind]):
+                    yield cast(ParseKind, item)
 
-        # Classes
-        for name, full_name in iter_declarations('class'):
-            quick_index_file.write(f"   * - :py:class:`{full_name}`\n")
+        for item in _iter_items(member_lists):
+
+            full_name = f"{module_name}.{item.name}"
+            crossref = item.crossref_directive
+            quick_index_file.write(f"   * - {crossref}`{full_name}`\n")
             quick_index_file.write(f"     - {title}\n")
 
             # Write the entry to the file
-            api_file.write(f".. autoclass:: {full_name}\n")
-            api_file.write(f"   :members:\n")
+            api_file.write(f".. {item.autodoc_directive}:: {full_name}\n")
+
             # api_file.write(f"    :member-order: groupwise\n")
 
+            special_rules = MEMBER_SPECIAL_RULES.get(
+                full_name, MEMBER_SPECIAL_RULES.get(item.__class__, EMPTY_TUPLE))
+
             # Apply special per-class addenda
-            for rule in MEMBER_SPECIAL_RULES.get(full_name, EMPTY_TUPLE):
+            for rule in special_rules:
                 api_file.write(f"    {rule}\n")
 
             api_file.write("\n")
 
             # print(f"  Class {item}")
             # text_file.write(f"     - Class\n")
-            # text_file.write(f"     - {path_name}\n")
-
-        # Functions
-        for name, full_name in iter_declarations('function'):
-            quick_index_file.write(f"   * - :py:func:`{full_name}`\n")
-            quick_index_file.write(f"     - {title}\n")
-
-            api_file.write(f".. autofunction:: {full_name}\n\n")
-
-            # print(f"  Function {item}")
-            # text_file.write(f"     - Func\n")
             # text_file.write(f"     - {path_name}\n")
 
         api_file.close()
