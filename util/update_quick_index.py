@@ -20,7 +20,7 @@ from collections.abc import Mapping
 
 from pathlib import Path
 from textwrap import dedent
-from typing import Generator
+from typing import Iterable, Generator
 
 # Ensure we get utility & arcade imports first
 sys.path.insert(0, str(Path(__file__).parent.resolve()))
