@@ -55,6 +55,7 @@ MEMBER_SPECIAL_RULES = {
     "arcade.ArcadeContext" : SHOW_INHERITANCE + INHERITED_MEMBERS
 }
 
+
 # Module and class members to exclude
 EXCLUDED_MEMBERS = [
     "ImageData",
