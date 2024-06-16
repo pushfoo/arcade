@@ -20,7 +20,7 @@ from collections.abc import Mapping
 
 from pathlib import Path
 from textwrap import dedent
-from typing import Iterable, Generator
+from typing import Generator
 
 # Ensure we get utility & arcade imports first
 sys.path.insert(0, str(Path(__file__).parent.resolve()))
@@ -47,10 +47,6 @@ RULE_INHERITED_MEMBERS = (':inherited-members:',)
 MEMBER_SPECIAL_RULES = {
     "arcade.ArcadeContext" : RULE_SHOW_INHERITANCE + RULE_INHERITED_MEMBERS
 }
-
-SHOW_INHERITANCE = (':show-inheritance:',)
-INHERITED_MEMBERS = (':inherited-members:',)
-
 
 # Module and class members to exclude
 EXCLUDED_MEMBERS = [
